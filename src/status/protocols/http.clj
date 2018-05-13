@@ -1,8 +1,5 @@
 (ns status.protocols.http
-  (:require [status.errors :as err]
-            [status.success :as success]
-            [status.info :as info]
-            [status.utils :as utils]
+  (:require [status.core :as status]
             [clojure.string :as str]))
 
 (derive ::info ::http)
@@ -11,78 +8,78 @@
 (derive ::client-error ::http)
 (derive ::server-error ::http)
 
-(def statuses {::info         ::info/info
-               ::success      ::success/success
-               ::redirection  ::http
-               ::client-error ::err/error
-               ::server-error ::err/error
+(derive ::info         ::status/info)
+(derive ::success      ::status/success)
+(derive ::redirection  ::http)
+(derive ::client-error ::status/error)
+(derive ::server-error ::status/error)
 
-               ::continue            ::info
-               ::switching-protocols ::info
-               ::processing          ::info
-               ::early-hints         ::info
+(derive ::continue            ::info)
+(derive ::switching-protocols ::info)
+(derive ::processing          ::info)
+(derive ::early-hints         ::info)
 
-               ::ok                            ::success
-               ::created                       ::success
-               ::accepted                      ::success
-               ::non-authoritative-information ::success
-               ::no-content                    ::success
-               ::reset-content                 ::success
-               ::partial-content               ::success
-               ::multi-statuts                 ::success
-               ::already-reported              ::success
-               ::im-used                       ::success
+(derive ::ok                            ::success)
+(derive ::created                       ::success)
+(derive ::accepted                      ::success)
+(derive ::non-authoritative-information ::success)
+(derive ::no-content                    ::success)
+(derive ::reset-content                 ::success)
+(derive ::partial-content               ::success)
+(derive ::multi-statuts                 ::success)
+(derive ::already-reported              ::success)
+(derive ::im-used                       ::success)
 
-               ::multiple-choices   ::redirection
-               ::moved-permanently  ::redirection
-               ::found              ::redirection
-               ::see-other          ::redirection
-               ::not-modified       ::redirection
-               ::use-proxy          ::redirection
-               ::switch-proxy       ::redirection
-               ::temporary-redirect ::redirection
-               ::permanent-redirect ::redirection
+(derive ::multiple-choices   ::redirection)
+(derive ::moved-permanently  ::redirection)
+(derive ::found              ::redirection)
+(derive ::see-other          ::redirection)
+(derive ::not-modified       ::redirection)
+(derive ::use-proxy          ::redirection)
+(derive ::switch-proxy       ::redirection)
+(derive ::temporary-redirect ::redirection)
+(derive ::permanent-redirect ::redirection)
 
-               ::bad-request                     ::client-error
-               ::unauthorized                    ::client-error
-               ::payment-required                ::client-error
-               ::forbidden                       ::client-error
-               ::not-found                       ::client-error
-               ::method-not-allowed              ::client-error
-               ::not-acceptable                  ::client-error
-               ::proxy-authentication-required   ::client-error
-               ::request-timeout                 ::client-error
-               ::conflict                        ::client-error
-               ::gone                            ::client-error
-               ::length-required                 ::client-error
-               ::precondition-failed             ::client-error
-               ::payload-too-large               ::client-error
-               ::uri-too-long                    ::client-error
-               ::unsupported-media-type          ::client-error
-               ::range-not-satisfiable           ::client-error
-               ::expectation-failed              ::client-error
-               ::i-m-a-teapot                    ::client-error
-               ::misdirected-request             ::client-error
-               ::unprocessable-entity            ::client-error
-               ::locked                          ::client-error
-               ::failed-dependency               ::client-error
-               ::upgrade-required                ::client-error
-               ::precondition-required           ::client-error
-               ::too-many-requests               ::client-error
-               ::request-header-fields-too-large ::client-error
-               ::unavailable-for-leagal-reasons  ::client-error
+(derive ::bad-request                     ::client-error)
+(derive ::unauthorized                    ::client-error)
+(derive ::payment-required                ::client-error)
+(derive ::forbidden                       ::client-error)
+(derive ::not-found                       ::client-error)
+(derive ::method-not-allowed              ::client-error)
+(derive ::not-acceptable                  ::client-error)
+(derive ::proxy-authentication-required   ::client-error)
+(derive ::request-timeout                 ::client-error)
+(derive ::conflict                        ::client-error)
+(derive ::gone                            ::client-error)
+(derive ::length-required                 ::client-error)
+(derive ::precondition-failed             ::client-error)
+(derive ::payload-too-large               ::client-error)
+(derive ::uri-too-long                    ::client-error)
+(derive ::unsupported-media-type          ::client-error)
+(derive ::range-not-satisfiable           ::client-error)
+(derive ::expectation-failed              ::client-error)
+(derive ::i-m-a-teapot                    ::client-error)
+(derive ::misdirected-request             ::client-error)
+(derive ::unprocessable-entity            ::client-error)
+(derive ::locked                          ::client-error)
+(derive ::failed-dependency               ::client-error)
+(derive ::upgrade-required                ::client-error)
+(derive ::precondition-required           ::client-error)
+(derive ::too-many-requests               ::client-error)
+(derive ::request-header-fields-too-large ::client-error)
+(derive ::unavailable-for-leagal-reasons  ::client-error)
 
-               ::internal-server-error           ::server-error
-               ::not-implemented                 ::server-error
-               ::bad-gateway                     ::server-error
-               ::service-unavailable             ::server-error
-               ::gateway-timeout                 ::server-error
-               ::http-version-not-supported      ::server-error
-               ::variant-also-negotiates         ::server-error
-               ::insufficient-storage            ::server-error
-               ::loop-detected                   ::server-error
-               ::not-extended                    ::server-error
-               ::network-authentication-required ::server-error})
+(derive ::internal-server-error           ::server-error)
+(derive ::not-implemented                 ::server-error)
+(derive ::bad-gateway                     ::server-error)
+(derive ::service-unavailable             ::server-error)
+(derive ::gateway-timeout                 ::server-error)
+(derive ::http-version-not-supported      ::server-error)
+(derive ::variant-also-negotiates         ::server-error)
+(derive ::insufficient-storage            ::server-error)
+(derive ::loop-detected                   ::server-error)
+(derive ::not-extended                    ::server-error)
+(derive ::network-authentication-required ::server-error)
 
 (def code->status {100 ::continue
                    101 ::switching-protocols
@@ -149,8 +146,10 @@
 
 (def status->code (->> code->status (map (fn [[k v]] [v k])) (into {})))
 
-(defmethod utils/message ::http [status]
+(defmethod status/message ::http [status]
   (str "HTTP " (status->code status) " " (-> (name status)
                                              (str/replace #"-" " ")
                                              (str/capitalize))))
 
+;; (ancestors (code->status 404))
+;; (->> 404 code->status status/message)

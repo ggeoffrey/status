@@ -1,17 +1,10 @@
-(ns status.core
-  (:require [status.success :as success]
-            [status.errors :as errors]
-            [status.info :as info]))
+(ns status.core)
 
-(def statuses (merge info/statuses
-                     success/statuses
-                     errors/statuses))
+(derive ::info :status/status)
+(derive ::success :status/status)
+(derive ::error :status/status)
 
-(reduce (fn [_ [k v]]
-          (derive k v))
-        nil
-        statuses)
-
+(defmulti message identity)
 
 ;; (message ::http/not-found)
 ;; (ancestors ::http/switching-protocols)
